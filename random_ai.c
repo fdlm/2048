@@ -47,9 +47,10 @@ int random_sampling_next_move(struct board *b)
         for (int t = 0; t < tries_per_dir; ++t) {
             copy_board(b, &sandbox);
             prev_score = sandbox.score;
-            moves[move](&sandbox);
-            random_moves_till_death(&sandbox);
-            cur_points += sandbox.score - prev_score;
+            if (moves[move](&sandbox) != -1) {
+                random_moves_till_death(&sandbox);
+                cur_points += sandbox.score - prev_score;
+            }
         }
         if (cur_points > max_points) {
             max_points = cur_points;
