@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <ncurses.h>
 
 #define BOARD_SIZE 4
@@ -33,12 +34,9 @@ inline unsigned int rand_interval(unsigned int min, unsigned int max)
     return min + (r / buckets);
 }
 
-inline void add_new_element(struct board *b)
+inline void place_element(struct board *b, uint8_t elem_pos, uint8_t new_val)
 {
-    uint8_t new_val = (rand_interval(0, 10) == 0) ? 2 : 1;
-    uint8_t elem_pos = rand_interval(0, b->n_zeros);
     --b->n_zeros;
-
     for(uint8_t i=0; i < BOARD_SIZE; ++i) {
         for(uint8_t j=0; j < BOARD_SIZE; ++j) {
             if (b->field[i][j] == 0) {
@@ -52,14 +50,17 @@ inline void add_new_element(struct board *b)
     }
 }
 
+inline void add_new_element(struct board *b)
+{
+    uint8_t new_val = (rand_interval(0, 10) == 0) ? 2 : 1;
+    uint8_t elem_pos = rand_interval(0, b->n_zeros);
+
+    place_element(b, elem_pos, new_val);
+}
+
+
 inline void copy_board(struct board *from, struct board *to) {
-    to->n_zeros = from->n_zeros;
-    to->score = from->score;
-    for(uint8_t i=0; i < BOARD_SIZE; ++i) {
-        for(uint8_t j=0; j < BOARD_SIZE; ++j) {
-            to->field[i][j] = from->field[i][j];
-        }
-    }
+    memcpy(to, from, sizeof(*from));
 }
 
 inline void init_board(struct board *b)
@@ -105,7 +106,7 @@ inline void print_board(struct board *b)
 #define vertical_pos(board, i, j) board->field[j][i]
 
 #define move_func(dir, start, move, not_reached_final, pos) \
-inline int move_##dir(struct board *b) \
+inline int just_move_##dir(struct board *b) \
 { \
     int score = 0; \
     bool moved = false; \
@@ -123,7 +124,7 @@ inline int move_##dir(struct board *b) \
  \
             if (pos_val == place_val) { \
                 moved = true; \
-                score += (int) pow(2, ++pos(b, i, cur_place)); \
+                score += 1 << (++pos(b, i, cur_place)); \
                 ++b->n_zeros; \
                 move(cur_place); \
                 pos(b, i, cur_pos) = 0; \
@@ -146,10 +147,16 @@ inline int move_##dir(struct board *b) \
         } \
     } \
     b->score += score; \
-    if (moved) { \
+    return moved ? score : -1; \
+} \
+\
+inline int move_##dir(struct board *b) \
+{ \
+    int score = just_move_##dir(b); \
+    if (score != -1) { \
         add_new_element(b); \
     } \
-    return moved ? score : -1; \
+    return score; \
 }
 
 move_func(right, start_at_outer, move_to_inner, not_reached_inner, horizontal_pos)

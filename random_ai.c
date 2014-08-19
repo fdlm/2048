@@ -13,8 +13,8 @@ void random_moves_till_death(struct board *b)
         } while (!move_ok[move]);
 
         switch (move) {
-            case 0: new_score = move_up(b); break;
-            case 1: new_score = move_down(b); break;
+            case 0: new_score = move_down(b); break;
+            case 1: new_score = move_up(b); break;
             case 2: new_score = move_left(b); break;
             case 3: new_score = move_right(b); break;
         }
