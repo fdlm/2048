@@ -21,8 +21,6 @@ int main(int argc, char *argv[])
 {
     srand(time(NULL));
 
-    struct board b;
-    init_board(&b);
     int (*get_next_move)(struct board*);
 
     if (argc > 1 && strcmp(argv[1], "ai") == 0) {
@@ -38,30 +36,40 @@ int main(int argc, char *argv[])
         get_next_move = &input_next_move;
     }
 
-    initscr();
-    noecho();
-    keypad(stdscr, TRUE);
+    /* initscr(); */
+    /* noecho(); */
+    /* keypad(stdscr, TRUE); */
 
-    int new_score = 0;
-    int c = 0;
-    do {
-        switch (c) {
-            case KEY_UP: new_score = move_up(&b); break;
-            case KEY_LEFT: new_score = move_left(&b); break;
-            case KEY_DOWN: new_score = move_down(&b); break;
-            case KEY_RIGHT: new_score = move_right(&b); break;
-            default:;
-        }
-        if (new_score >= 0) {
-            clear();
-            print_board(&b);
-            refresh();
-        }
-    } while ((c = get_next_move(&b)) != 'q');
+    while (true) {
+        struct board b;
+        init_board(&b);
+        int new_score = 0;
+        int c = 0;
+        do {
+            switch (c) {
+                case KEY_UP: new_score = move_up(&b); break;
+                case KEY_LEFT: new_score = move_left(&b); break;
+                case KEY_DOWN: new_score = move_down(&b); break;
+                case KEY_RIGHT: new_score = move_right(&b); break;
+                default:;
+            }
+            /* if (new_score >= 0) { */
+            /*     clear(); */
+            /*     print_board(&b); */
+            /*     refresh(); */
+            /* } */
+            for(uint8_t i=0; i < BOARD_SIZE; ++i) {
+                for(uint8_t j=0; j < BOARD_SIZE; ++j) {
+                    printf("%d ", b.field[i][j]);
+                }
+            }
+            printf("\n");
+        } while ((c = get_next_move(&b)) != 'q');
+        printf("score: %d\n", b.score);
+    }
 
-    printw("GAME OVER!");
-    getch();
+    /* printw("GAME OVER!"); */
+    /* getch(); */
+    /* endwin(); */
 
-    endwin();
-    printf("\nEnd score: %d\n\n", b.score);
 }
